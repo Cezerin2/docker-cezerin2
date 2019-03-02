@@ -1,0 +1,116 @@
+server {
+        listen 80;
+        server_name www.${DOMAIN};
+
+        gzip              on;
+        gzip_comp_level   2;
+        gzip_min_length   1024;
+        gzip_vary         on;
+        gzip_proxied      expired no-cache no-store private auth;
+        gzip_types        application/x-javascript application/javascript application/xml application/json text/xml text/css text$
+
+        client_body_timeout 12;
+        client_header_timeout 12;
+        reset_timedout_connection on;
+        send_timeout 10;
+        server_tokens off;
+        client_max_body_size 50m;
+
+        expires 1y;
+        access_log off;
+        log_not_found off;
+
+        location / {
+                try_files $uri @proxy;
+        }
+
+        location @proxy {
+                # Proxy to NodeJS
+                expires off;
+                proxy_pass       http://${STORE_HOST};
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+        }
+}
+
+server {
+        listen 80;
+        server_name admin.${DOMAIN};
+
+        gzip              on;
+        gzip_comp_level   2;
+        gzip_min_length   1024;
+        gzip_vary         on;
+        gzip_proxied      expired no-cache no-store private auth;
+        gzip_types        application/x-javascript application/javascript application/xml application/json text/xml text/css text$
+
+        client_body_timeout 12;
+        client_header_timeout 12;
+        reset_timedout_connection on;
+        send_timeout 10;
+        server_tokens off;
+        client_max_body_size 50m;
+
+        expires 1y;
+        access_log off;
+        log_not_found off;
+
+        location / {
+                try_files $uri @proxy;
+        }
+
+        location @proxy {
+                # Proxy to NodeJS
+                expires off;
+                proxy_pass       http://${ADMIN_HOST};
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+        }
+}
+
+server {
+        listen 80;
+        server_name api.${DOMAIN};
+
+        gzip              on;
+        gzip_comp_level   2;
+        gzip_min_length   1024;
+        gzip_vary         on;
+        gzip_proxied      expired no-cache no-store private auth;
+        gzip_types        application/x-javascript application/javascript application/xml application/json text/xml text/css text$
+
+        client_body_timeout 12;
+        client_header_timeout 12;
+        reset_timedout_connection on;
+        send_timeout 10;
+        server_tokens off;
+        client_max_body_size 50m;
+
+        expires 1y;
+        access_log off;
+        log_not_found off;
+
+        location / {
+                try_files $uri @proxy;
+        }
+
+        location @proxy {
+                # Proxy to NodeJS
+                expires off;
+                proxy_pass       http://${API_HOST};
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+        }
+}

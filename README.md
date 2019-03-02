@@ -7,6 +7,7 @@
 - [cezerin2 api](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2/README.md)
 - [cezerin2 admin](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2-admin/README.md)
 - [cezerin2 store](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2-store/README.md)
+- [cezerin2 proxy](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2-proxy/README.md)
 
 
 # What is Cezerin?

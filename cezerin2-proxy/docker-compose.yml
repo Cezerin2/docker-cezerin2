@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  cezerin2:
+    image: cezerin2/cezerin2
+    ports:
+      - 3001:80
+    environment:
+      - DB_HOST=db
+      - DB_PORT=27017
+      - DB_NAME=shop
+      - STORE_URL=http://www.example.com
+      - ADMIN_BASE_URL=http://admin.example.com
+      - ASSETS_BASE_URL=http://api.example.com
+    volumes:
+      - ./content:/var/www/cezerin2/public/content
+    depends_on:
+      - db
+    restart: always
+
+  cezerin2-store:
+    image: cezerin2/cezerin2-store
+    environment:
+      - API_BASE_URL=http://api.example.com/api/v1
+      - AJAX_BASE_URL=http://api.example.com/ajax
+    ports:
+      - 3000:80
+    depends_on:
+      - cezerin2
+    restart: always
+
+  cezerin2-admin:
+    image: cezerin2/cezerin2-admin
+    environment:
+      - API_BASE_URL=http://api.example.com/api/v1
+    ports:
+      - 3002:80
+    depends_on:
+      - cezerin2
+    restart: always
+
+  cezerin2-proxy:
+    image: cezerin2/cezerin2-proxy
+    environment:
+      - DOMAIN=example.com
+      - API_HOST=cezerin2
+      - STORE_HOST=cezerin2-store
+      - ADMIN_HOST=cezerin2-admin
+    ports:
+      - 80:80
+    depends_on:
+      - cezerin2
+      - cezerin2-store
+      - cezerin2-admin
+    restart: always
+
+  db:
+    image: mongo:3.6
+    ports:
+      - 27017:27017
+    volumes:
+      - ./db:/data/db
+    restart: always

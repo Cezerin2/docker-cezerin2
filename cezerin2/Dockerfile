@@ -1,12 +1,14 @@
 FROM node:8
-MAINTAINER Luke Busstra <luke.busstra@gmail.com>
+LABEL maintainer "Nitin Goyal <nitingoyal.dev@gmail.com>, Luke Busstra <luke.busstra@gmail.com>"
 
 ENV NGINX_CODENAME stretch
-ENV CEZERIN_VERSION 0.33.0
+ENV CEZERIN_VERSION 0.34.0
+ENV API_PORT 3001
 
 # install requirements and NGINX
 RUN echo "deb http://nginx.org/packages/debian/ ${NGINX_CODENAME} nginx" >> /etc/apt/sources.list \
 	&& apt-get update && apt-get install --no-install-recommends --no-install-suggests -y --force-yes \
+		gettext-base\
 		bash \
 		zip \
 		unzip \
@@ -23,30 +25,29 @@ RUN npm install pm2 -g
 # download project
 RUN mkdir -p /var/www \
     && cd /var/www \
-    && wget -O cezerin.zip https://github.com/cezerin2/cezerin2/archive/v$CEZERIN_VERSION.zip \
-    && unzip cezerin.zip \
-    && rm cezerin.zip \
-    && mv cezerin2-$CEZERIN_VERSION cezerin
-
-# overwrite config
-COPY config/* /var/www/cezerin/config/
+    && wget -O cezerin2.zip https://github.com/cezerin2/cezerin2/archive/v$CEZERIN_VERSION.zip \
+    && unzip cezerin2.zip \
+    && rm cezerin2.zip \
+    && mv cezerin2-$CEZERIN_VERSION cezerin2
 
 # overwrite PM2 process file
-COPY process.json /var/www/cezerin/
+COPY process.json /var/www/cezerin2/
 
 # Nginx config
-COPY nginx/nginx.conf /etc/nginx/
-COPY nginx/default.conf /etc/nginx/conf.d/
+RUN cd /var/www/cezerin2 \
+	&& mv nginx/nginx.conf /etc/nginx/ \
+	&& mv nginx/default.conf.template /etc/nginx/conf.d/
 
 # script to run Nginx and PM2
-COPY docker-entrypoint.sh /usr/local/bin/
+RUN cd /var/www/cezerin2 \
+	&& mv docker-entrypoint.sh /usr/local/bin/ \
+	&& chmod +x "/usr/local/bin/docker-entrypoint.sh"
 
 # build project
-RUN cd /var/www/cezerin \
-    && npm install \
-    && npm run build
+RUN cd /var/www/cezerin2 \
+    && npm i
 
-WORKDIR /var/www/cezerin
+WORKDIR /var/www/cezerin2
 
 EXPOSE 80
 

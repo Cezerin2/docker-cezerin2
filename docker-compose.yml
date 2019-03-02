@@ -1,26 +1,45 @@
 version: '3'
 
 services:
-  app:
-    image: cezerin/cezerin
+  cezerin2:
+    image: cezerin2/cezerin2
+    ports:
+      - 3001:80
     environment:
       - DB_HOST=db
       - DB_PORT=27017
       - DB_NAME=shop
-      - DB_USER=
-      - DB_PASS=
-    ports:
-      - 4000:80
+      - DB_USER=user
+      - DB_PASS=password
     volumes:
-      - /var/www/cezerin-on-host:/var/www/cezerin
+      - ./content-on-host:/var/www/cezerin2/public/content
     depends_on:
       - db
     restart: always
 
-  db:
-    image: mongo
+  cezerin2-store:
+    image: cezerin2/cezerin2-store
+    environment:
+      - API_BASE_URL=http://cezerin2/api/v1
+      - AJAX_BASE_URL=http://cezerin2/ajax
     ports:
-      - 27017
+      - 3000:80
+    depends_on:
+      - cezerin2
+    restart: always
+
+  admin:
+    image: cezerin2/cezerin2-admin
+    ports:
+      - 3002:80
+    depends_on:
+      - cezerin2
+    restart: always
+
+  db:
+    image: mongo:3.4
+    ports:
+      - 27017:27017
     volumes:
-      - /var/www/db-on-host:/data/db
+      - ./db-on-host:/data/db
     restart: always

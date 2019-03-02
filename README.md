@@ -1,70 +1,117 @@
-# Supported tags and respective Dockerfile links
+# Supported tags
 
-- ```0.33.0```, ```latest```
-[(0.33.0/Dockerfile)](https://github.com/cezerin2/docker-cezerin/blob/master/images/0.33.0/Dockerfile)
+- ```0.33.0```, ```0.34.0```, ```latest```
+
+#Supported Images
+
+- [cezerin2 api](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2/README.md)
+- [cezerin2 admin](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2-admin/README.md)
+- [cezerin2 store](https://github.com/cezerin2/docker-cezerin2/blob/master/cezerin2-store/README.md)
 
 
 # What is Cezerin?
 [Cezerin](https://github.com/cezerin2/cezerin2) is React and Node.js based eCommerce platform.
 
-# How to use this image
+# docker - How to use this images
 
-### Start a cezerin server instance
-- port: **4000**
+### Start a mongo server instance
 
 ```shell
 docker run -d \
---name store \
--p 4000:80 \
-cezerin2/cezerin2:latest
+--name store-db \
+-v /var/www/store-db:/data/db \
+mongo:latest
 ```
 
-- port: **4000**
-- MongoDB connection
+### Start a ceszerin2 server instance
 
 ```shell
 docker run -d \
---name store \
--p 4000:80 \
--e DB_HOST=255.255.255.255 \
+--name cezerin2 \
+--link store-db:db \
+-p 3001:80 \
+-e DB_HOST=db \
 -e DB_PORT=27017 \
 -e DB_NAME=shop \
 -e DB_USER=user \
 -e DB_PASS=password \
+-v /var/www/cezerin2/public/content:/var/www/cezerin2/public/content \
 cezerin2/cezerin2:latest
 ```
 
-- port: **4000**
-- MongoDB connection
-- use volume
-
+### Start a ceszerin2 admin server instance
 
 ```shell
 docker run -d \
---name store \
--p 4000:80 \
--e DB_HOST=255.255.255.255 \
--e DB_PORT=27017 \
--e DB_NAME=shop \
--e DB_USER=user \
--e DB_PASS=password \
--v /var/www/cezerin-on-host:/var/www/cezerin \
-cezerin2/cezerin2:latest
+--name cezerin2-admin \
+--link cezerin2:cezerin2 \
+-p 3002:80 \
+-e API_BASE_URL=http://cezerin2/api/vi
+cezerin2/cezerin2-admin:latest
 ```
 
-### Environment variables
+### Start a ceszerin2 store server instance
 
-Name|Description|Default
--|-|-
-`DB_HOST`|MongoDB host name or IP|`127.0.0.1`
-`DB_PORT`|MongoDB server port|`27017`
-`DB_NAME`|MongoDB database name|`shop`
-`DB_USER`|MongoDB user name|
-`DB_PASS`|MongoDB user password|
+```shell
+docker run -d \
+--name ceszerin2-store \
+--link cezerin2:cezerin2 \
+-p 3000:80 \
+-e API_BASE_URL=http://cezerin2/api/v1 \ 
+-e AJAX_BASE_URL=http://cezerin2/ajax \ 
+cezerin2/cezerin2-store:latest
+```
 
-### Image contains
+# docker compose - How to use this images
 
-- **Node.js (8.10)** to run
-API on **port 3001** and
-Store (Server-Side Rendering) on **port 3000**.
-- **Nginx (1.12.2)** as a reverse proxy to Node.js and dynamic image thumbnails. **Port 80**.
+```shell
+version: '3'
+
+services:
+  cezerin2:
+    image: cezerin2/cezerin2
+    ports:
+      - 3001:80
+    environment:
+      - DB_HOST=db
+      - DB_PORT=27017
+      - DB_NAME=shop
+      - DB_USER=user
+      - DB_PASS=password
+    volumes:
+      - ./content:/var/www/cezerin2/public/content
+    depends_on:
+      - db
+    restart: always
+
+  cezerin2-store:
+    image: cezerin2/cezerin2-store
+    environment:
+      - API_BASE_URL=http://cezerin2/api/v1
+      - AJAX_BASE_URL=http://cezerin2/ajax
+    ports:
+      - 3000:80
+    depends_on:
+      - cezerin2
+    restart: always
+
+  admin:
+    image: cezerin2/cezerin2-admin
+    ports:
+      - 3002:80
+    depends_on:
+      - cezerin2
+    restart: always
+
+  db:
+    image: mongo:3.4
+    ports:
+      - 27017:27017
+    volumes:
+      - ./db:/data/db
+    restart: always
+```
+
+### Access
+
+localhost:3000
